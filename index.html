@@ -7,8 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
 
     <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
-        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
 
     <title>Movie Maker</title>
 </head>
@@ -82,10 +81,115 @@
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
 
-    <script src="js/jquery-3.4.1.js"></script>
-    <script src="js/popper.min.js"></script>
-    <script src="js/bootstrap.js"></script>
-    <script src="js/script.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
+    <script>
+
+function searchMovie() {
+    $("#movie-list").html(" ");
+
+    // menggunakan ajax
+    $.ajax({
+        // alamat
+        url: "http://omdbapi.com",
+        // method
+        type: "get",
+        // tipe data yang dikembalikan
+        dataType: "json",
+        // params / data
+        data: {
+            "apikey": "420f0a5a",
+            // ambil value input
+            "s": $("#search-input").val()
+        },
+        success: function (result) {
+            // jika berhasil
+            if (result.Response == "True") {
+                let movies = result.Search;
+                $.each(movies, function (i, data) {
+                    $("#movie-list").append(`
+                    <div class=col-md-3>
+                    <div class="card mb-3">
+                        <img src="` + data.Poster + `" class="card-img-top" width="200px">
+                        <div class="card-body">
+                            <h5 class="card-title">` + data.Title + `</h5>
+                            <h6> Year realeased : ` + data.Year + ` </h6>
+                            <h6 class="card-subtitle mb-2 text-muted">` + data.Type + `</h6>
+                            <a href="#" class ="card-link seeDetail" data-toggle="modal"
+                            data-target="#exampleModal" data-id="` + data.imdbID + `"> See Detail </a>
+                        </div>
+                    </div>
+                    </div>`);
+
+                    $("#search-input").val("");
+                });
+            } else {
+                $("#movie-list").html(
+                    `<div class="col">
+                    <h1 class="text-center">` + result.Error + `</h1>`
+                );
+            }
+        }
+    });
+}
+
+$("#search-button").on("click", function (params) {
+    searchMovie();
+});
+
+// saat tompol dilepas
+$("#search-input").on("keyup", function (e) {
+    // keycode untuk enter adalah 13
+    if (e.keyCode === 13) {
+        searchMovie();
+    }
+});
+
+// menangani jika elemnent yang tidak ada sejak awal / dalam html
+// carikan elemt movie list, ketika elemt yang namanya seeDetail, jalankan func
+$("#movie-list").on("click", ".seeDetail", function () {
+
+    $.ajax({
+        // alamat
+        url: "http://omdbapi.com",
+        // method
+        type: "get",
+        // tipe data yang dikembalikan
+        dataType: "json",
+        // params / data
+        data: {
+            "apikey": "420f0a5a",
+            // ambil data dari data-id
+            // this = tombol yang sedang diklik (detail)
+            "i": $(this).data("id")
+        },
+        success: function (movie) {
+            if (movie.Response === "True") {
+                $(".modal-body").html(`
+                <div class="container-fluid">
+                    <div class=row>
+                        <div class="col-md-4">
+                            <img src="` + movie.Poster + `" class="img-fluid">
+                        </div>
+                        <div class="col-md-8">
+                            <ul class="list-group" >
+                                <h3><li class="list-group-item"> ` + movie.Title + `</li></h3>
+                                <li class="list-group-item">Released : ` + movie.Released + `</li>
+                                <li class="list-group-item">Genre    : ` + movie.Genre + `</li>
+                                <li class="list-group-item">Director : ` + movie.Director + ` </li> 
+                                <li class="list-group-item">Actors   : ` + movie.Actors + ` </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                `);
+            }
+        }
+    });
+
+})
+
+    </script>
 </body>
 
 </html>
